@@ -3,14 +3,13 @@ version: 0.2
 phases:
   install:
     commands:
+      - cd serverless-etl-pipeline
       - echo Installing dependencies...
       - pip install -r requirements.txt
 
   build:
     commands:
-      - echo Build started
-      - python --version
-
-artifacts:
-  files:
+      - echo Build started...
+      - python lambda/extract.py
+      - echo Build completed successfully!
     - '**/*'
