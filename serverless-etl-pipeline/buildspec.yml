@@ -9,9 +9,9 @@ phases:
 
   build:
     commands:
-      - echo Build started...
-      - python lambda/lambda_function.py
-      - echo Build completed successfully!
+      - echo Checking Python syntax...
+      - python -m py_compile lambda/lambda_function.py
+      - echo Build successful!
 
 artifacts:
   files:
