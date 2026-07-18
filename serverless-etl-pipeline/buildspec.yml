@@ -12,4 +12,7 @@ phases:
       - echo Build started...
       - python lambda/extract.py
       - echo Build completed successfully!
+
+artifacts:
+  files:
     - '**/*'
