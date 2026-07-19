@@ -1,1 +1,1 @@
-Testing AWS CodePipeline Auto Trigger
+Testing AWS CodePipeline Auto Triggers
