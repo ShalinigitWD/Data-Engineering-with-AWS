@@ -1,4 +1,4 @@
-import requests
+import urllib.request
 import boto3
 import json
 from decimal import Decimal
@@ -12,17 +12,18 @@ def lambda_handler(event, context):
 
     # Create S3 client
     s3 = boto3.client("s3", region_name="ap-south-1")
+
     # Connect to DynamoDB
     dynamodb = boto3.resource("dynamodb", region_name="ap-south-1")
     table = dynamodb.Table("EarthquakeEvents")
 
     # Fetch data from API
-    response = requests.get(url)
+    response = urllib.request.urlopen(url)
 
-    if response.status_code == 200:
+    if response.status == 200:
 
         # Convert response to JSON
-        data = response.json()
+        data = json.loads(response.read().decode("utf-8"))
 
         # Upload raw JSON to S3
         s3.put_object(
@@ -34,7 +35,6 @@ def lambda_handler(event, context):
 
         print("Raw JSON uploaded to S3 successfully!")
 
-        # List to store processed records
         processed_records = []
 
         # Process each earthquake
@@ -50,16 +50,14 @@ def lambda_handler(event, context):
             place = earthquake["properties"]["place"]
             time = earthquake["properties"]["time"]
 
-            # Convert timestamp to readable UTC time
             readable_time = datetime.fromtimestamp(time / 1000, UTC)
 
             longitude = earthquake["geometry"]["coordinates"][0]
             latitude = earthquake["geometry"]["coordinates"][1]
             depth = earthquake["geometry"]["coordinates"][2]
 
-            # Create cleaned record
             record = {
-                "id": earthquake_id,
+                "event_id": earthquake_id,
                 "magnitude": Decimal(str(magnitude)),
                 "place": place,
                 "time": str(readable_time),
@@ -68,22 +66,24 @@ def lambda_handler(event, context):
                 "depth": Decimal(str(depth))
             }
 
-            # Save in list
             processed_records.append(record)
 
-            # Store in DynamoDB
             table.put_item(Item=record)
 
-        print("All processed earthquake records stored in DynamoDB successfully!")
-        print(f"Total Processed Records: {len(processed_records)}")
+        print(f"Successfully processed {len(processed_records)} earthquake records.")
 
-        print("\nFirst 3 Records:")
-        for record in processed_records[:3]:
-            print(record)
+        return {
+            "statusCode": 200,
+            "body": json.dumps(
+                {
+                    "message": "ETL completed successfully",
+                    "records_processed": len(processed_records),
+                }
+            ),
+        }
 
     else:
-        print("Error:", response.status_code)
-
-
-if __name__ == "__main__":
-    lambda_handler(None, None)
+        return {
+            "statusCode": response.status,
+            "body": json.dumps("Failed to fetch earthquake data")
+        }
