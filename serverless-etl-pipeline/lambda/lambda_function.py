@@ -14,7 +14,7 @@ def lambda_handler(event, context):
     s3 = boto3.client("s3", region_name="ap-south-1")
     # Connect to DynamoDB
     dynamodb = boto3.resource("dynamodb", region_name="ap-south-1")
-    table = dynamodb.Table("EarthquakeData")
+    table = dynamodb.Table("EarthquakeEvents")
 
     # Fetch data from API
     response = requests.get(url)
@@ -26,7 +26,7 @@ def lambda_handler(event, context):
 
         # Upload raw JSON to S3
         s3.put_object(
-            Bucket="shalini-earthquake-etl-2026",
+            Bucket="shalini-earthquake-etl-data",
             Key="raw_data/earthquakes.json",
             Body=json.dumps(data, indent=4),
             ContentType="application/json"
