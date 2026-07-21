@@ -1,2 +1,2 @@
 # Testing automatic CodePipeline trigger
-testing automatic.
+testing automatic CI/CD pipeline.
